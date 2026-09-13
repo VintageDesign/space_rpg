@@ -47,6 +47,7 @@ struct Color {
 
     static constexpr Color white() { return {1.0f, 1.0f, 1.0f, 1.0f}; }
     static constexpr Color red() { return {1.0f, 0.2f, 0.2f, 1.0f}; }
+    static constexpr Color blue() { return {0.2f, 0.2f, 1.0f, 1.0f}; }
     static constexpr Color gray() { return {0.5f, 0.5f, 0.5f, 1.0f}; }
 };
 
