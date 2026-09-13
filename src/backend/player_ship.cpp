@@ -41,9 +41,16 @@ void PlayerShip::respawn(Vec2 at) {
     velocity_ = {};
 }
 
-void PlayerShip::onHitboxEntered(Area2D&) {
-    hull_->color = Color::red();
-    crashed.fire(*this);
+void PlayerShip::onHitboxEntered(Area2D& object) {
+    if(object.parent()->name == "Salvage")
+    {
+
+      object.parent()->queueFree();
+    }
+    else{
+      hull_->color = Color::red();
+      crashed.fire(*this);
+    }
 }
 
 void PlayerShip::onHitboxExited(Area2D&) {
