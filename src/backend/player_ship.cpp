@@ -64,6 +64,7 @@ void PlayerShip::update(float dt) {
     if (thrusting) {
         velocity_ += Vec2{0.0f, -1.0f}.rotated(rotation) * (kThrust * dt);
     }
-    velocity_ *= std::max(0.0f, 1.0f - kDamping * dt);
+    // Playing with using a frictionless plane.. Like in real life.
+    //velocity_ *= std::max(0.0f, 1.0f - kDamping * dt);
     position += velocity_ * dt;
 }
