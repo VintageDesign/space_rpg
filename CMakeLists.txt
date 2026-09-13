@@ -11,6 +11,7 @@ endif()
 
 find_package(Vulkan REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Qml Quick QuickWidgets QuickControls2)
+find_package(GTest REQUIRED)
 
 # Turns on AUTOMOC, which every Q_OBJECT class here depends on.
 qt_standard_project_setup()
@@ -78,9 +79,10 @@ target_compile_options(engine PRIVATE -Wall -Wextra)
 
 enable_testing()
 add_executable(engine_tests tests/engine_tests.cpp)
-target_link_libraries(engine_tests PRIVATE engine)
+target_link_libraries(engine_tests PRIVATE engine GTest::gtest GTest::gtest_main)
 target_compile_options(engine_tests PRIVATE -Wall -Wextra)
-add_test(NAME engine_tests COMMAND engine_tests)
+include(GoogleTest)
+gtest_discover_tests(engine_tests)
 
 # ---------------------------------------------------------------------------
 # Application
@@ -95,6 +97,8 @@ qt_add_executable(space_game
     src/SceneRenderer.h
     src/backend/asteroid.cpp
     src/backend/asteroid.h
+    src/backend/salvage.cpp
+    src/backend/salvage.h
     src/backend/level.cpp
     src/backend/level.h
     src/backend/player_ship.cpp

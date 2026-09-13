@@ -14,7 +14,7 @@ C++17, CMake ≥ 3.20, Qt 6 (Core Gui Widgets Qml Quick QuickWidgets QuickContro
 - Shaders in `shaders/` are compiled to SPIR-V at build time into `build/shaders/`; the binary locates them via the absolute `SHADER_DIR` compile definition, so it runs from any cwd.
 - `qml/Controls.qml` is embedded as `qrc:/qml/Controls.qml` — rebuild after editing it.
 - New source files must be added by hand to the matching target list in `CMakeLists.txt` (`engine` library or `space_game` executable).
-- Tests are a single hand-rolled executable (`tests/engine_tests.cpp`) using a `CHECK` macro — no framework, no test filtering. To run one test, temporarily comment out calls in `main()`. New tests need a `testXxx()` function plus a call in `main()`.
+- Tests (`tests/engine_tests.cpp`) use GoogleTest (`libgtest-dev`, found via `find_package(GTest)`). Run a single test with `./build/engine_tests --gtest_filter=Engine.TestName`. New tests need a `TEST(Engine, Name)` block; no registration elsewhere is required.
 
 ## Architecture
 
