@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/Area2D.h"
+#include "engine/Camera2D.h"
 #include "engine/Node2D.h"
 #include "engine/Signal.h"
 #include "engine/Sprite.h"
@@ -25,5 +26,6 @@ private:
     engine::Sprite* hull_ = nullptr;
     engine::Sprite* flame_ = nullptr;
     engine::Area2D* hitbox_ = nullptr;
+    engine::Camera2D* camera_ = nullptr;
     engine::Vec2 velocity_;
 };

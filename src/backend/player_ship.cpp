@@ -27,6 +27,9 @@ PlayerShip::PlayerShip() {
     flame_->rotation = kPi;
     flame_->visible = false;
 
+    camera_ = addChild<Camera2D>();
+    camera_->makeCurrent();
+
     hitbox_ = addChild<Area2D>(CircleShape{0.8f});
     connect(hitbox_->areaEntered, this, &PlayerShip::onHitboxEntered);
     connect(hitbox_->areaExited, this, &PlayerShip::onHitboxExited);

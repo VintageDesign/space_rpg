@@ -2,7 +2,6 @@
 
 #include "backend/asteroid.h"
 #include "backend/player_ship.h"
-#include "engine/Camera2D.h"
 #include "engine/Signal.h"
 #include "engine/Sprite.h"
 
@@ -29,7 +28,6 @@ Level::Level() {
 
     ship_ = addChild<PlayerShip>();
     ship_->position = kSpawnPoint;
-    ship_->addChild<Camera2D>()->makeCurrent();
 
     asteroid_ = addChild<Asteroid>(Vec2{4.5f, 4.5f}, 0.6f);
     asteroid_->position = {15, 0};
