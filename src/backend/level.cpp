@@ -1,6 +1,7 @@
 #include "backend/level.h"
 
 #include "backend/asteroid.h"
+#include "backend/salvage.h"
 #include "backend/player_ship.h"
 #include "engine/Signal.h"
 #include "engine/Sprite.h"
@@ -19,6 +20,7 @@ constexpr unsigned kBackdropSeed = 1337;
 constexpr float kBackdropHalfExtent = 150.0f;  // m
 constexpr int kStarCount = 300;
 constexpr int kExtraAsteroidCount = 8;
+constexpr int kRandomSalvageCount = 10;
 constexpr float kSpawnClearRadius = 12.0f;  // m kept free of asteroids
 
 }  // namespace
@@ -64,6 +66,15 @@ void Level::scatterBackdrop() {
         }
         const float size = asteroidSize(rng);
         addChild<Asteroid>(Vec2{size, size}, spin(rng))->position = at;
+        ++placed;
+    }
+
+    for (int placed = 0; placed < kRandomSalvageCount;) {
+        const Vec2 at{coord(rng), coord(rng)};
+        if ((at - kSpawnPoint).length() < kSpawnClearRadius) {
+            continue;
+        }
+        addChild<Salvage>()->position = at;
         ++placed;
     }
 }
