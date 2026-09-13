@@ -20,11 +20,32 @@ public:
     uint32_t layer = 1;
     uint32_t mask = 1;
 
+    // Provides the `other` Area2D
     Signal<Area2D&> areaEntered;
+
+    // Provides the `other` Area2D
     Signal<Area2D&> areaExited;
 
     bool detects(const Area2D& other) const {
         return (mask & other.layer) != 0;
+    }
+
+    void testEntered(Area2D& other) {
+      if (!detects(other)) {
+        return;
+      }
+      overlapping_.push_back(&other);
+      areaEntered.fire(other);
+    }
+
+    void testExited(Area2D& other) {
+      if (!detects(other)) {
+        return;
+      }
+      overlapping_.erase(
+          std::remove(overlapping_.begin(), overlapping_.end(), &other),
+          overlapping_.end());
+      areaExited.fire(other);
     }
     const std::vector<Area2D*>& overlapping() const { return overlapping_; }
 

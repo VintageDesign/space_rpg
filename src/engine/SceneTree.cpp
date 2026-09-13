@@ -9,29 +9,6 @@
 
 namespace engine {
 
-namespace {
-
-void fireEntered(Area2D& self, Area2D& other,
-                 std::vector<Area2D*>& overlapping) {
-    if (!self.detects(other)) {
-        return;
-    }
-    overlapping.push_back(&other);
-    self.areaEntered.fire(other);
-}
-
-void fireExited(Area2D& self, Area2D& other,
-                std::vector<Area2D*>& overlapping) {
-    if (!self.detects(other)) {
-        return;
-    }
-    overlapping.erase(
-        std::remove(overlapping.begin(), overlapping.end(), &other),
-        overlapping.end());
-    self.areaExited.fire(other);
-}
-
-}  // namespace
 
 SceneTree::SceneTree() : root_(std::make_unique<Node>()) {
     root_->name = "root";
@@ -125,12 +102,12 @@ void SceneTree::physicsStep() {
     // Callbacks may queueFree or add nodes; both are safe here because frees
     // are deferred and new areas only join the next physics step.
     for (auto [a, b] : exited) {
-        fireExited(*a, *b, a->overlapping_);
-        fireExited(*b, *a, b->overlapping_);
+        a->testExited(*b);
+        b->testExited(*a);
     }
     for (auto [a, b] : entered) {
-        fireEntered(*a, *b, a->overlapping_);
-        fireEntered(*b, *a, b->overlapping_);
+        a->testEntered(*b);
+        b->testEntered(*a);
     }
 }
 
