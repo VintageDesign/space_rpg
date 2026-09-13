@@ -1,10 +1,12 @@
 #include "engine/Area2D.h"
+#include "engine/Camera2D.h"
 #include "engine/Collision.h"
 #include "engine/Node2D.h"
 #include "engine/RenderQueue.h"
 #include "engine/SceneTree.h"
 #include "engine/Signal.h"
 #include "engine/Sprite.h"
+#include "engine/View2D.h"
 
 #include <cmath>
 #include <cstdio>
@@ -370,10 +372,94 @@ void testSignalsDeferred() {
     CHECK(direct);
 }
 
+void testViewTransform() {
+    View2D view;
+    view.center = {10, -5};
+    view.visibleHeight = 20;
+    view.screenSize = {800, 400};
+
+    // Visible height is fixed; width follows the aspect ratio.
+    CHECK(near(view.visibleSize(), {40, 20}));
+    view.screenSize = {400, 400};
+    CHECK(near(view.visibleSize(), {20, 20}));
+    view.screenSize = {800, 400};
+
+    const Transform2D clip = view.worldToClip();
+    CHECK(near(clip.apply(view.center), {0, 0}));
+    CHECK(near(clip.apply(view.center + view.visibleSize() * 0.5f), {1, 1}));
+    CHECK(near(clip.apply(view.center - view.visibleSize() * 0.5f), {-1, -1}));
+
+    // Screen space: top-left pixel origin, y-down.
+    CHECK(near(view.worldToScreen().apply(view.center), {400, 200}));
+    CHECK(near(view.worldToScreen().apply({-10, -15}), {0, 0}));
+
+    view.zoom = 2;
+    CHECK(near(view.visibleSize(), {20, 10}));
+
+    view.rotation = 0.7f;
+    const Vec2 p{13, 2};
+    CHECK(near(view.screenToWorld().apply(view.worldToScreen().apply(p)), p));
+    CHECK(near(view.worldToClip().apply(view.center), {0, 0}));
+}
+
+void testCamera() {
+    SceneTree tree;
+    auto* target = tree.root().addChild<Scripted>();
+    target->onUpdate = [](Scripted& self) {
+        self.position += Vec2{1, 0};
+        self.rotation += 0.5f;
+    };
+
+    // makeCurrent() before entering the tree takes effect on entry.
+    auto* holder = new Node2D;
+    auto* camera = holder->addChild<Camera2D>();
+    camera->makeCurrent();
+    CHECK(camera->isCurrent());
+    delete holder;
+
+    camera = target->addChild<Camera2D>();
+    camera->position = {0, 2};  // offset from the target, in target space
+    camera->zoom = 2;
+    camera->makeCurrent();
+    CHECK(tree.currentCamera() == camera);
+
+    // The view follows the camera's position but stays upright.
+    tree.tick(0.016f);
+    CHECK(near(tree.view.center, camera->globalPosition()));
+    CHECK(tree.view.rotation == 0.0f);
+    CHECK(tree.view.zoom == 2.0f);
+
+    camera->followRotation = true;
+    tree.tick(0.016f);
+    CHECK(std::abs(tree.view.rotation - 1.0f) < 1e-3f);
+    camera->followRotation = false;
+
+    // A deferred teleport lands in the view in the same tick.
+    tree.callDeferred([&] { target->position = {50, 50}; });
+    tree.tick(0.016f);
+    CHECK(near(tree.view.center, camera->globalPosition()));
+
+    // Switching cameras.
+    auto* fixed = tree.root().addChild<Camera2D>();
+    fixed->position = {-7, 3};
+    fixed->makeCurrent();
+    CHECK(!camera->isCurrent());
+    tree.tick(0.016f);
+    CHECK(near(tree.view.center, {-7, 3}));
+
+    // Freeing the current camera clears it; the view keeps its last values.
+    fixed->queueFree();
+    tree.tick(0.016f);
+    CHECK(tree.currentCamera() == nullptr);
+    CHECK(near(tree.view.center, {-7, 3}));
+}
+
 }  // namespace
 
 int main() {
     testTransformComposition();
+    testViewTransform();
+    testCamera();
     testLifecycle();
     testCollisionShapes();
     testAreaEvents();

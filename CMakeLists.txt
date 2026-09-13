@@ -51,6 +51,8 @@ add_custom_target(shaders DEPENDS ${SPV_FILES})
 # ---------------------------------------------------------------------------
 add_library(engine STATIC
     src/engine/Area2D.h
+    src/engine/Camera2D.cpp
+    src/engine/Camera2D.h
     src/engine/Collision.cpp
     src/engine/Collision.h
     src/engine/Connection.h
@@ -68,7 +70,8 @@ add_library(engine STATIC
     src/engine/Shapes.h
     src/engine/Signal.h
     src/engine/Sprite.cpp
-    src/engine/Sprite.h)
+    src/engine/Sprite.h
+    src/engine/View2D.h)
 target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(engine PUBLIC Qt6::Core)
 target_compile_options(engine PRIVATE -Wall -Wextra)

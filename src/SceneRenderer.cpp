@@ -69,8 +69,8 @@ void SceneRenderer::startNextFrame() {
         kMaxFrameSeconds);
     frameTimer_.restart();
 
-    tree_->viewportSize = {static_cast<float>(imageSize.width()),
-                           static_cast<float>(imageSize.height())};
+    tree_->view.screenSize = {static_cast<float>(imageSize.width()),
+                              static_cast<float>(imageSize.height())};
     tree_->tick(dt);
 
     queue_.clear();
@@ -130,12 +130,16 @@ void SceneRenderer::startNextFrame() {
         scissor.extent = renderPassInfo.renderArea.extent;
         vkCmdSetScissor(cb, 0, 1, &scissor);
 
-        // Pixels -> NDC. Vulkan NDC is y-down, matching world space.
+        // Read after tick(), so this frame's camera movement is included.
+        // Vulkan NDC is y-down, matching world space.
+        const engine::Transform2D worldToClip = tree_->view.worldToClip();
         PushConstants pc{};
-        pc.scale[0] = 2.0f / viewport.width;
-        pc.scale[1] = 2.0f / viewport.height;
-        pc.offset[0] = -1.0f;
-        pc.offset[1] = -1.0f;
+        pc.axisX[0] = worldToClip.x.x;
+        pc.axisX[1] = worldToClip.x.y;
+        pc.axisY[0] = worldToClip.y.x;
+        pc.axisY[1] = worldToClip.y.y;
+        pc.origin[0] = worldToClip.origin.x;
+        pc.origin[1] = worldToClip.origin.y;
         vkCmdPushConstants(cb, pipeline_->layout(), VK_SHADER_STAGE_VERTEX_BIT,
                            0, sizeof(pc), &pc);
 

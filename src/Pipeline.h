@@ -6,8 +6,9 @@
 
 // Matches the push_constant block in shaders/sprite.vert.
 struct PushConstants {
-    float scale[2];
-    float offset[2];
+    float axisX[2];
+    float axisY[2];
+    float origin[2];
 };
 
 // Owns the graphics pipeline and its layout.

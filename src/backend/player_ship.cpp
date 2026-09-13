@@ -9,29 +9,25 @@ using namespace engine;
 namespace {
 
 constexpr float kTurnSpeed = 3.5f;   // rad/s
-constexpr float kThrust = 400.0f;    // px/s^2
+constexpr float kThrust = 20.0f;     // m/s^2
 constexpr float kDamping = 0.8f;     // fraction of velocity lost per second
 constexpr Color kHullColor = Color::white();
-
-float wrap(float v, float max) {
-    return v < 0.0f ? v + max : (v >= max ? v - max : v);
-}
 
 }  // namespace
 
 PlayerShip::PlayerShip() {
     name = "PlayerShip";
 
-    hull_ = addChild<Sprite>(ShapeKind::Triangle, Vec2{32, 40}, kHullColor);
+    hull_ = addChild<Sprite>(ShapeKind::Triangle, Vec2{1.6f, 2.0f}, kHullColor);
     hull_->zIndex = 1;
 
-    flame_ = addChild<Sprite>(ShapeKind::Triangle, Vec2{14, 16},
+    flame_ = addChild<Sprite>(ShapeKind::Triangle, Vec2{0.7f, 0.8f},
                               Color{1.0f, 0.6f, 0.1f, 0.9f});
-    flame_->position = {0, 28};
+    flame_->position = {0, 1.4f};
     flame_->rotation = kPi;
     flame_->visible = false;
 
-    hitbox_ = addChild<Area2D>(CircleShape{16});
+    hitbox_ = addChild<Area2D>(CircleShape{0.8f});
     connect(hitbox_->areaEntered, this, &PlayerShip::onHitboxEntered);
     connect(hitbox_->areaExited, this, &PlayerShip::onHitboxExited);
 }
@@ -70,7 +66,4 @@ void PlayerShip::update(float dt) {
     }
     velocity_ *= std::max(0.0f, 1.0f - kDamping * dt);
     position += velocity_ * dt;
-
-    const Vec2 view = tree()->viewportSize;
-    position = {wrap(position.x, view.x), wrap(position.y, view.y)};
 }

@@ -3,6 +3,7 @@
 #include "engine/Input.h"
 #include "engine/Math.h"
 #include "engine/Node.h"
+#include "engine/View2D.h"
 
 #include <functional>
 #include <memory>
@@ -13,10 +14,11 @@
 namespace engine {
 
 class Area2D;
+class Camera2D;
 class RenderQueue;
 
 // Owns the root node and drives a frame, in order: update, collision, deferred
-// calls, frees.
+// calls, frees, then the view update from the current camera.
 class SceneTree {
 public:
     SceneTree();
@@ -36,9 +38,14 @@ public:
     // freed nodes in those.
     void callDeferred(std::function<void()> fn);
 
+    // The camera that drives `view`, or null. Cleared when that camera leaves
+    // the tree; `view` then keeps its last values.
+    void setCurrentCamera(Camera2D* camera) { currentCamera_ = camera; }
+    Camera2D* currentCamera() const { return currentCamera_; }
+
     Input input;
-    // World units are pixels; set by the renderer each frame.
-    Vec2 viewportSize{1.0f, 1.0f};
+    // World-to-screen mapping. The renderer sets view.screenSize each frame.
+    View2D view;
 
 private:
     friend class Node;
@@ -50,6 +57,7 @@ private:
     void physicsStep();
     void flushDeferred();
     void flushFrees();
+    void updateView();
     void nodeEntered(Node* node);
     void nodeExited(Node* node);
 
@@ -58,6 +66,7 @@ private:
     std::vector<std::function<void()>> deferredCalls_;
     std::vector<Area2D*> areas_;
     std::set<AreaPair> overlaps_;
+    Camera2D* currentCamera_ = nullptr;
 };
 
 }  // namespace engine

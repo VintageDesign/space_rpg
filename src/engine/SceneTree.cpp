@@ -1,6 +1,7 @@
 #include "engine/SceneTree.h"
 
 #include "engine/Area2D.h"
+#include "engine/Camera2D.h"
 #include "engine/Collision.h"
 
 #include <algorithm>
@@ -48,6 +49,7 @@ void SceneTree::tick(float dt) {
     physicsStep();
     flushDeferred();
     flushFrees();
+    updateView();
     input.endFrame();
 }
 
@@ -132,6 +134,17 @@ void SceneTree::physicsStep() {
     }
 }
 
+void SceneTree::updateView() {
+    if (currentCamera_ == nullptr) {
+        return;
+    }
+    const Transform2D t = currentCamera_->globalTransform();
+    view.center = t.origin;
+    view.zoom = currentCamera_->zoom;
+    view.visibleHeight = currentCamera_->visibleHeight;
+    view.rotation = currentCamera_->followRotation ? t.rotation() : 0.0f;
+}
+
 void SceneTree::flushFrees() {
     std::vector<Node*> pending = std::move(pendingFree_);
     pendingFree_.clear();
@@ -163,6 +176,9 @@ void SceneTree::nodeEntered(Node* node) {
 }
 
 void SceneTree::nodeExited(Node* node) {
+    if (node == currentCamera_) {
+        currentCamera_ = nullptr;
+    }
     auto* area = dynamic_cast<Area2D*>(node);
     if (area == nullptr) {
         return;

@@ -5,13 +5,16 @@ layout(location = 1) in vec4 inColor;
 
 layout(location = 0) out vec4 fragColor;
 
-// Maps world pixels to NDC: ndc = pos * scale + offset.
+// 2x3 affine view transform, world -> clip:
+// clip = axisX * pos.x + axisY * pos.y + origin.
 layout(push_constant) uniform PushConstants {
-    vec2 scale;
-    vec2 offset;
+    vec2 axisX;
+    vec2 axisY;
+    vec2 origin;
 } pc;
 
 void main() {
-    gl_Position = vec4(inPosition * pc.scale + pc.offset, 0.0, 1.0);
+    vec2 clip = pc.axisX * inPosition.x + pc.axisY * inPosition.y + pc.origin;
+    gl_Position = vec4(clip, 0.0, 1.0);
     fragColor = inColor;
 }
